@@ -2,8 +2,8 @@
 pragma solidity ^0.8.0;
 
 //import '@openZeppelin/contracts/access/Ownable.sol';
-import '@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol';
-import '@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol';
+import './node_modules/@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol';
+import './node_modules/@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol';
 
 import "./libraries/Ownable.sol";
 import "./interface/IERC2981.sol";
