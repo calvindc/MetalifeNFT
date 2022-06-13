@@ -4,17 +4,17 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
-	"github.com/MetalifeNFT/abi/metaMaster"
+	"github.com/MetalifeNFT/contracts/abi/metaMaster"
 	"github.com/MetalifeNFT/mutils"
 	"github.com/MetalifeNFT/params"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/cmd/utils"
-	ethutils "github.com/ethereum/go-ethereum/cmd/utils"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"gopkg.in/urfave/cli.v1"
 	"log"
+	"math/big"
 	"os"
 )
 
@@ -28,7 +28,7 @@ func main() {
 		utils.DirectoryFlag{
 			Name:  "keystore-path",
 			Usage: "If you have a non-standard path for the ethereum keystore directory provide it using this argument. ",
-			Value: ethutils.DirectoryString{Value: params.DefaultKeyStoreDir()},
+			Value: utils.DirectoryString(params.DefaultKeyStoreDir()),
 		},
 		cli.StringFlag{
 			Name: "eth-rpc-endpoint",
@@ -38,7 +38,7 @@ func main() {
 		},
 	}
 	app.Action = mainCtx
-	app.Name = "deploy"
+	app.Name = "deploycontract"
 	app.Version = "0.1"
 	err := app.Run(os.Args)
 	if err != nil {
@@ -52,8 +52,8 @@ func mainCtx(ctx *cli.Context) error {
 	if err != nil {
 		log.Fatalf(fmt.Sprintf("Failed to connect to the Ethereum client: %v", err))
 	}
-	address := common.HexToAddress(ctx.String("eth-rpc-endpoint"))
-	address, keybin, err := mutils.PromptAccount(address, ctx.String("keystore-path"), "")
+	address := common.HexToAddress(ctx.String("address"))
+	address, keybin, err := mutils.PromptAccount(address, ctx.String("keystore-path"), "123")
 	if err != nil {
 		log.Fatalf(fmt.Sprintf("failed to unlock account %s", err))
 	}
@@ -67,7 +67,10 @@ func mainCtx(ctx *cli.Context) error {
 }
 
 func deployContract(key *ecdsa.PrivateKey, conn *ethclient.Client) {
-	auth := bind.NewKeyedTransactor(key)
+	auth, err := bind.NewKeyedTransactorWithChainID(key, big.NewInt(20180430))
+	if err != nil {
+		log.Fatalf("failed to NewKeyedTransactor %s", err)
+	}
 	contractAddress, tx, _, err := metaMaster.DeployMetaMaster(auth, conn)
 	if err != nil {
 		log.Fatalf("failed to deploy registry %s", err)
