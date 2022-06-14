@@ -83,7 +83,7 @@ func deployContractMetaMaster(key *ecdsa.PrivateKey, conn *ethclient.Client) {
 	ctx := context.Background()
 	_, err = bind.WaitDeployed(ctx, conn, tx)
 	if err != nil {
-		log.Fatalf("failed to deploy contact when mining :%v", err)
+		log.Fatalf("failed to deploy contract when mining :%v", err)
 	}
 	params.RegistryAddressMetaMaster = contractAddress
 	fmt.Printf("deploy registry complete...\n")
@@ -102,8 +102,9 @@ func deployContractSalePlain(key *ecdsa.PrivateKey, conn *ethclient.Client) {
 	ctx := context.Background()
 	_, err = bind.WaitDeployed(ctx, conn, tx)
 	if err != nil {
-		log.Fatalf("failed to deploy contact when mining :%v", err)
+		log.Fatalf("failed to deploy contract when mining :%v", err)
 	}
+	params.RegistryAddressSalePlain = contractAddress
 	fmt.Printf("deploy registry complete...\n")
 	fmt.Printf("[SalePlain] RegistryContractAddress=%s\n \n", contractAddress.String())
 }
@@ -120,8 +121,9 @@ func deployContractSaleAuction(key *ecdsa.PrivateKey, conn *ethclient.Client) {
 	ctx := context.Background()
 	_, err = bind.WaitDeployed(ctx, conn, tx)
 	if err != nil {
-		log.Fatalf("failed to deploy contact when mining :%v", err)
+		log.Fatalf("failed to deploy contract when mining :%v", err)
 	}
+	params.RegistryAddressSaleAuction = contractAddress
 	fmt.Printf("deploy registry complete...\n")
 	fmt.Printf("[SaleAuction] RegistryContractAddress=%s\n \n", contractAddress.String())
 }
