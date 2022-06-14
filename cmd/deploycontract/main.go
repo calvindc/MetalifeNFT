@@ -4,7 +4,12 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
+	"log"
+	"os"
+
 	"github.com/MetalifeNFT/contracts/abi/metaMaster"
+	"github.com/MetalifeNFT/contracts/abi/saleAuction"
+	"github.com/MetalifeNFT/contracts/abi/salePlain"
 	"github.com/MetalifeNFT/mutils"
 	"github.com/MetalifeNFT/params"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -13,9 +18,6 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"gopkg.in/urfave/cli.v1"
-	"log"
-	"math/big"
-	"os"
 )
 
 func main() {
@@ -53,7 +55,7 @@ func mainCtx(ctx *cli.Context) error {
 		log.Fatalf(fmt.Sprintf("Failed to connect to the Ethereum client: %v", err))
 	}
 	address := common.HexToAddress(ctx.String("address"))
-	address, keybin, err := mutils.PromptAccount(address, ctx.String("keystore-path"), "123")
+	address, keybin, err := mutils.PromptAccount(address, ctx.String("keystore-path"), "")
 	if err != nil {
 		log.Fatalf(fmt.Sprintf("failed to unlock account %s", err))
 	}
@@ -62,18 +64,40 @@ func mainCtx(ctx *cli.Context) error {
 	if err != nil {
 		log.Fatalf(fmt.Sprintf("failed to parse priv key %s", err))
 	}
-	deployContract(key, conn)
+	deployContractMetaMaster(key, conn)
+	deployContractSalePlain(key, conn)
+	deployContractSaleAuction(key, conn)
+
 	return nil
 }
 
-func deployContract(key *ecdsa.PrivateKey, conn *ethclient.Client) {
-	auth, err := bind.NewKeyedTransactorWithChainID(key, big.NewInt(20180430))
+func deployContractMetaMaster(key *ecdsa.PrivateKey, conn *ethclient.Client) {
+	auth, err := bind.NewKeyedTransactorWithChainID(key, params.ChainID)
 	if err != nil {
-		log.Fatalf("failed to NewKeyedTransactor %s", err)
+		log.Fatalf("failed to NewKeyedTransactor [MetaMaster] %s", err)
 	}
 	contractAddress, tx, _, err := metaMaster.DeployMetaMaster(auth, conn)
 	if err != nil {
-		log.Fatalf("failed to deploy registry %s", err)
+		log.Fatalf("failed to deploy registry [MetaMaster] %s", err)
+	}
+	ctx := context.Background()
+	_, err = bind.WaitDeployed(ctx, conn, tx)
+	if err != nil {
+		log.Fatalf("failed to deploy contact when mining :%v", err)
+	}
+	params.RegistryAddressMetaMaster = contractAddress
+	fmt.Printf("deploy registry complete...\n")
+	fmt.Printf("[MetaMaster] RegistryContractAddress=%s\n \n", contractAddress.String())
+}
+
+func deployContractSalePlain(key *ecdsa.PrivateKey, conn *ethclient.Client) {
+	auth, err := bind.NewKeyedTransactorWithChainID(key, params.ChainID)
+	if err != nil {
+		log.Fatalf("failed to NewKeyedTransactor [SalePlain] %s", err)
+	}
+	contractAddress, tx, _, err := salePlain.DeploySalePlain(auth, conn, params.RegistryAddressMetaMaster)
+	if err != nil {
+		log.Fatalf("failed to deploy registry [SalePlain] %s", err)
 	}
 	ctx := context.Background()
 	_, err = bind.WaitDeployed(ctx, conn, tx)
@@ -81,5 +105,23 @@ func deployContract(key *ecdsa.PrivateKey, conn *ethclient.Client) {
 		log.Fatalf("failed to deploy contact when mining :%v", err)
 	}
 	fmt.Printf("deploy registry complete...\n")
-	fmt.Printf("RegistryContractAddress=%s\n \n", contractAddress.String())
+	fmt.Printf("[SalePlain] RegistryContractAddress=%s\n \n", contractAddress.String())
+}
+
+func deployContractSaleAuction(key *ecdsa.PrivateKey, conn *ethclient.Client) {
+	auth, err := bind.NewKeyedTransactorWithChainID(key, params.ChainID)
+	if err != nil {
+		log.Fatalf("failed to NewKeyedTransactor [SaleAuction] %s", err)
+	}
+	contractAddress, tx, _, err := saleAuction.DeploySaleAuction(auth, conn, params.RegistryAddressMetaMaster)
+	if err != nil {
+		log.Fatalf("failed to deploy registry [SaleAuction] %s", err)
+	}
+	ctx := context.Background()
+	_, err = bind.WaitDeployed(ctx, conn, tx)
+	if err != nil {
+		log.Fatalf("failed to deploy contact when mining :%v", err)
+	}
+	fmt.Printf("deploy registry complete...\n")
+	fmt.Printf("[SaleAuction] RegistryContractAddress=%s\n \n", contractAddress.String())
 }

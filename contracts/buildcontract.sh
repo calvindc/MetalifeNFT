@@ -13,12 +13,12 @@ abigen  --abi ./abi/metaMaster/metaMaster.abi \
 
 abigen  --abi ./abi/salePlain/salePlain.abi \
         --bin ./abi/salePlain/salePlain.bin \
-        --type salePlain \
-        --pkg abi \
+        --type SalePlain \
+        --pkg salePlain \
         --out ./abi/salePlain/salePlain.go
 
 abigen  --abi ./abi/saleAuction/saleAuction.abi \
         --bin ./abi/saleAuction/saleAuction.bin \
-        --type saleAuction \
-        --pkg abi \
+        --type SaleAuction \
+        --pkg saleAuction \
         --out ./abi/saleAuction/saleAuction.go
